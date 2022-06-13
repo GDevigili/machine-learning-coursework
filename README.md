@@ -459,7 +459,83 @@ f1 Score: 0.856269113149847
 ```
 ![[Pasted image 20220613033435.png]]
 
-## Detalhes Técnicos:
+Apesar da grande accuracy, o modelo da decision tree basicamente só verifica se o passageiro é homem ou não e o declara morto em caso positivo, pois `Sex` é a coluna com a maior correlação. A accuracy é alta apenas por se beneficiar do desbalanceamento do dataset por conta da maior parte do mesmo ser composta de homens.
+![[Pasted image 20220613034115.png]]
+ reimplementando, sem os parâmetros escolhidos pelo randomized search cv, obtemos um resultado com menor accuracy porém fazendo um melhor uso do dataset:
+ ```python
+ tree = DecisionTreeClassifier().fit(x_train, y_train)
+
+classifier_evaluation(tree, x_test, y_test)
+
+print(export_text(tree, feature_names=x_train.columns.to_list(), max_depth=2))
+
+plot_tree(tree, feature_names=x_train.columns.to_list(), max_depth=2);
+```
+![[Pasted image 20220613034723.png]]
+![[Pasted image 20220613034741.png]]
+## 2.8. Random Forest Classifier
+```python
+
+
+  
+
+params = {
+	'n_estimators': [10, 25, 50, 75, 100, 200, 500, 1000],
+	'criterion': ['gini', 'entropy', 'log_loss'],
+	'max_depth': [None, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20],
+	'bootstrap': [True, False],
+	'max_features': ['auto', 'sqrt', 'log2'],
+}
+
+> best accuracy: 0.8569850320741269 
+> best params: {'n_estimators': 1000, 'max_features': 'auto', 'max_depth': 7, 'criterion': 'entropy', 'bootstrap': True}
+```
+```python
+ROC Score: 0.8811838153943418 
+Accuracy Score: 0.8854961832061069 
+Average Precision Score: 0.8158724948036946 
+f1 Score: 0.8656716417910448
+```
+![[Pasted image 20220613034928.png]]
+
+## 2.9. Perceptron
+Parâmetros Testados:
+```python
+params = {
+	'penalty': ['l2', 'l1', 'elasticnet'],
+	'alpha': np.logspace(-5, 0, 7),
+	'shuffle': [True, False],
+}
+
+> best accuracy: 0.8493228795438347 
+> best params: {'shuffle': False, 'penalty': 'l1', 'alpha': 0.021544346900318846}
+```
+
+Treinando o modelo com os melhores parâmetros:
+```python
+best_perceptron = Perceptron(
+	penalty=choose_perceptron.best_estimator_.penalty,
+	alpha=choose_perceptron.best_estimator_.alpha,
+	shuffle=choose_perceptron.best_estimator_.shuffle,
+	max_iter=10**6,
+	tol=0.001,
+).fit(x_train, y_train)
+
+
+> ROC Score: 0.8724118855697803 
+> Accuracy Score: 0.8778625954198473 
+> Average Precision Score: 0.806202085587905 
+> f1 Score: 0.8554216867469879
+```
+![[Pasted image 20220613035250.png]]
+# 3. Resultados
+As métricas de avaliação podem ser observadas na tabela a seguir:
+
+![[Pasted image 20220613035409.png]]
+
+Mesmo a RandomForest e a DecisionTree demonstrando um desempenho levemente melhor que os demais modelos, elas não utilizam tão efetivamente o dataset, como pode ser visto na árvore plotada na sessão 2.7. Desta forma o perceptron se mostra o melhor modelo por conta de uma precisão maior e também por maior efetividade computacional, já que o algoritmo de Support Vector Machine é o mais demorado dos algoritmos testados, levando mais de 26 minutos para a testagem de 5 combinações distintas dos parâmetros por Randomized Search CV.
+
+# Detalhes Técnicos:
 O trabalho foi realizado utilizando *jupyter notebook*, versão `7.1.0` com um kernel `python` em sua versão `3.8.10 64-bit`.
 
 Abaixo seguem as bibliotecas utilizadas:
