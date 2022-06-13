@@ -5,6 +5,9 @@
 > Disciplina: Aprendizado de Máquina<br>
 > Aluno: Gianlucca Devigili<br>
 
+## Objetivo Geral:
+Treinar modelos de *machine learning* utilizando o clássico *dataset* do Titanic de modo a prever os sobreviventes do desastre bem como descobrir quais fatores mais influenciaram na sobrevivência dos passageiros.
+
 # 1. Os dados
 Para a execução do presente trabalho, utilizei o clássico dataset do [titanic](https://www.kaggle.com/competitions/titanic/data).  Uma pequena amostra dos dados pode ser vista na imagem abaixo:
 
@@ -155,6 +158,8 @@ Na execução do trabalho, utilizei os seguintes modelos:
 
 Para a escolha dos melhores hiperparâmetros utilizei Randomized Seach CV (`sklearn.model_selection.RandomizedSearchCV`). A preferência pelo mesmo ao invés do Grid Search CV foi por conta da velocidade de execução, já que ao testar alguns modelos com Grid Search o tempo de execução foi de horas. Portanto optei por testar uma maior diversidade de modelos em detrimento de talvez não ter a combinação mais otimizada de hiperparâmetros.
 
+Os modelos foram treinados usando uma divisão de 70% do dataset para treino e 30% para teste, resultando em 916 linhas para treino e 393 linhas para teste.
+
 ## 2.1. K-Nearest Neighbors (Implementação Própria)
 Por conta da simplicidade do algoritmo de KNN, decidi por implementar manualmente o algoritmo para testar o mesmo:
 ```python
@@ -261,7 +266,7 @@ classifier_evaluation(best_knn, x_test, y_test)
 ```
 ![[Pasted image 20220613023123.png]]
 
-## 2.3. 
+## 2.3. Regressão Logística
 Parâmetros Testados:
 ```python
 params = {
@@ -308,6 +313,151 @@ classifier_evaluation(best_regression, x_test, y_test)
 
 Curva ROC:
 ![[Pasted image 20220613025907.png]]
+
+## 2.4. Support Vector Machine Classifier
+Parâmetros testados:
+```python
+params = {
+	'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
+	'C': np.linspace(0.1,3,7),
+	'degree': [2, 3, 4, 5],	
+	'gamma': np.logspace(-5, 0, 7)
+}
+```
++ `kernel` diz respeito ao tipo do kernel a ser usado pelo algoritmo;
++ `C` diz respeito ao parâmetro de regularização com penalidade L2;
++ `degree` diz respeito ao grau da função polinomial do kernel;
++ `gamma` diz respeito ao coeficiente do kernel para os kernels rbf, polinomial (*poly*) e sigmóide.
+
+Como o código utilizado para a escolha de parâmetros e avaliação se repete apenas mudando o modelo utilizado, irei apenas anexar os resultados a partir deste modelo.
+
+Utilizando os melhores parâmetros:
+```python
+best_svc = SVC(
+	kernel='linear',
+	C=3.0,
+	degree=5,
+	gamma=0.021544346900318846,
+	max_iter=-1
+	shrinking=True,
+	tol=0.001
+	probability=False,
+	cache_size=200,
+	random_state=0
+).fit(x_train, y_train)
+
+classifier_evaluation(best_svc, x_test, y_test)
+
+> ROC Score: 0.8728465307412675 
+> Accuracy Score: 0.8753180661577609
+> Average Precision Score: 0.7968777654358917 
+> f1 Score: 0.8563049853372433
+```
+![[Pasted image 20220613031200.png]]
+
+## 2.5. Stochastic Gradient Descent
+Parâmetros Testados:
+```python
+params = {
+	'loss': [
+		'hinge',
+		'log_loss',
+		'log',
+		'modified_huber',
+		'squared_hinge',
+		'perceptron',
+		'squared_error',
+		'huber',
+		'epsilon_insensitive',
+		'squared_epsilon_insensitive'
+	],
+	'penalty': ['l2', 'l1', 'elasticnet'],
+	'alpha': np.logspace(-5, 0, 7),
+	'shuffle': [True, False],
+	'learning_rate': ['constant', 'optimal', 'invscaling', 'adaptive'],
+}
+```
++ `loss` diz respeito a função de perda a ser utilizada;
++ `alpha` constante que multiplica o termo da regularização;
++ `shuffle` booleano que indica se os dados devem ou não ser embaralhados após cada *epoch*;
++ `learning_rate` diz respeito à taxa de aprendizado do modelo.
+
+```python
+best accuracy: 0.7259384651936327 
+best params: {'shuffle': True, 'penalty': 'l2', 'loss': 'log', 'learning_rate': 'optimal', 'alpha': 0.0004641588833612782}
+```
+
+Treinando com os melhores parâmetros:
+```python
+best_sgd = SGDClassifier(
+	loss= choose_sgd.best_estimator_.loss,
+	penalty=choose_sgd.best_estimator_.penalty,
+	alpha=choose_sgd.best_estimator_.alpha,
+	shuffle=choose_sgd.best_estimator_.shuffle,
+	learning_rate=choose_sgd.best_estimator_.learning_rate,
+	max_iter=10**6,
+	tol=0.001,
+).fit(x_train, y_train)
+
+classifier_evaluation(best_sgd, x_test, y_test)
+
+> ROC Score: 0.5029239766081871 
+> Accuracy Score: 0.5674300254452926 
+> Average Precision Score: 0.4384179277710817 
+> f1 Score: 0.011627906976744186
+```
+![[Pasted image 20220613032050.png]]
+
+## 2.6. Gaussian Process Classifier
+Parâmetros testados:
+```python
+params = {
+	'optimizer': ['fmin_l_bfgs_b', 'lbfgs', 'sgd', 'rmsprop', 'adam'],
+	'n_restarts_optimizer': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+}
+```
+```python
+best accuracy: 0.6800962223806131 best params: {'optimizer': 'adam', 'n_restarts_optimizer': 7}
+```
+
+Treinando o modelo utilizando os melhores parâmetros obtemos os seguintes resultados:
+```python
+ROC Score: 0.6739766081871346 
+Accuracy Score: 0.6946564885496184 
+Average Precision Score: 0.5734883264139994 
+f1 Score: 0.5945945945945945
+```
+![[Pasted image 20220613032601.png]]
+## 2.7. Decision Tree Classifier
+Parâmetros testados:
+```python
+params = {
+	'criterion': ['gini', 'entropy', 'los_loss'],
+	'splitter': ['best', 'random'],
+	'max_depth': [None, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+	'min_samples_split': [2, 3, 4, 5, 6, 7, 8, 9, 10],
+	'min_samples_leaf': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+}
+```
++ `criterion` diz respeito à função a ser utilizada para definir o critério de um *split*;
++ `splitter` diz respeito à estratégia de *splitting*;
++ `max_depth` é a profundidade máxima da árvore;
++ `min_samples_split` é a quantidade mínima de amostras que uma única amostra deve possuir para que continue sendo realizado o *splitting*;
++ `min_samples_leaf` é a quantidade mínima de amostras que um *split* deve conter para que seja considerado uma folha;
+
+```python
+> best accuracy: 0.8493169398907104 
+> best params: {'splitter': 'random', 'min_weight_fraction_leaf': 0.0, 'min_samples_split': 9, 'min_samples_leaf': 9, 'max_depth': 4, 'criterion': 'gini'}
+```
+
+Performance do modelo treinado com os melhores parâmetros:
+```python
+ROC Score: 0.8733206891101627 
+Accuracy Score: 0.8804071246819338 
+Average Precision Score: 0.8136232471306798 
+f1 Score: 0.856269113149847
+```
+![[Pasted image 20220613033435.png]]
 
 ## Detalhes Técnicos:
 O trabalho foi realizado utilizando *jupyter notebook*, versão `7.1.0` com um kernel `python` em sua versão `3.8.10 64-bit`.
