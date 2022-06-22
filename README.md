@@ -11,7 +11,7 @@ Treinar modelos de *machine learning* utilizando o clássico *dataset* do Titani
 # 1. Os dados
 Para a execução do presente trabalho, utilizei o clássico dataset do [titanic](https://www.kaggle.com/competitions/titanic/data).  Uma pequena amostra dos dados pode ser vista na imagem abaixo:
 
-![[Pasted image 20220612233403.png]]
+![img](img/img1.png)
 
 O dataset contém dados referentes à $494$ sobreviventes e $815$ pessoas que não sobreviveram.
 
@@ -39,7 +39,8 @@ O dataset original, como tem o propósito de servir como dataset para uma compet
 Primeiramente eliminei as colunas `Name` e `Ticket` pelos motivos já discutidos acima, bem como a coluna `Cabin` pela grande quantidade de dados faltantes na mesma.
 
 Agora, analisando as informações do dataset mostradas pelo método  `pandas.DataFrame.info()`, temos:
-![[Pasted image 20220613002557.png]]
+![](img/img2.png)
+
 evidenciando a necessidade de tratamento de dados faltantes nas colunas `Age`, `Fare` e `Embarked`.
 
 Para a coluna `Age`, substituí os dados faltantes pela idade média dos passageiros: 30 anos.
@@ -47,7 +48,8 @@ Para a coluna `Age`, substituí os dados faltantes pela idade média dos passage
 Para a coluna `Fare`, substituí os dados faltantes pela moda da coluna, no caso o porto de Southampton (`"S"`), que onde provavelmente foi o embarque de fato de tais passageiros já que existem $914$ embarques neste porto, contra $270$ em Cherbourg e $123$ em Queenstown.
 
 Para a coluna `Fare`, de modo a deixar ela mais próxima do que poderia ser o dado real que não está presente na base, utilizei o fato de que a classe do passageiro tem grande influência no valor de sua passagem, o que pode ser evidenciado na seguinte visualização:
-![[Pasted image 20220613003554.png]]
+![](img/img3.png)
+
 portanto substituí os dados faltantes pelo preço médio da passagem referente à classe do passageiro que não tinha este dado.
 
 Um problema encontrado na coluna `Fare` que pode ser visto no *boxplot* acima é a presença de valores estremos no dataset. Ao todo são 4 valores com tal problema e todos eles apresentam o valor de $\$512.3292$, indicando que provavelmente se trata de um *outlier*. Da mesma forma que fiz com o passageiro que não possuía um valor de passagem, substituí os dados extremos pela média do valor da passagem agrupada pela classe dos passageiros, que neste caso em particular era a primeira classe.
@@ -59,32 +61,35 @@ Tal tratamento de dados foi realizado através da função `pandas.get_dummies()
 
 ### Dataset Final
 Como dataset final temos o dataset `df_dummies` com os seguintes metadados:
-![[Pasted image 20220613011134.png]]
+![](img/img4.png)
+
 e como amostra dos dados temos a tabela:
-![[Pasted image 20220613011206.png]]
+![](img/img5.png)
+
 que contém os dados referentes aos mesmos passageiros da amostra da primeira imagem deste documento.
 
 ## 1.3. Análise Exploratória
 Seguem as estatísticas de cada uma das colunas numéricas do dataframe:
-![[Pasted image 20220613011822.png]]
+![](img/img6.png)
+
 Podemos observar que a coluna referente à quantidade de irmãos e cônjuges (`SibSp`) possui uma grande quantidade de zeros, tanto que a média fica abaixo de 1 e apenas o terceiro quartil apresenta o valor 1. Outro detalhe interessante é a quantidade de pais/filhos (`Parch`) que desta vez apresenta valores iguais a zero em todos os quartis, evidenciando que os passageiros do Titanic, em sua maioria, estavam sozinhos ou apenas na presença do cônjuge, bem como a presença de uma grande família à bordo.
 
 Outro ponto importante observável nessas estatísticas diz respeito à coluna `Fare` a média e a mediana divergem bastante, sendo que a média está mais perto do $3^o$ quartil do que da mediana, porém apresentando um baixo desvio padrão. Tal estatísticas ficam mais fáceis de se entender visualizando-se a frequência de cada variável utilizando um histograma (`bins = 50`):
 
 ### Histograma de `Fare` (Preço da Passagem)
-![[Pasted image 20220613012339.png]]
+![](img/img7.png)
 
 A maior concentração dos preços das passagens está em valores baixos, contudo existem diversos passageiros com passagens de valores altos que chegam a ser discrepantes do restante. Inclusive, este gráfico desconsidera aqueles valores extremos iniciais que estavam acima de 500 dólares.
 
 Outra maneira de se visualizar tais dados é através de um boxplot, agora separado pela classe do passageiro:
 
-![[Pasted image 20220613012845.png]]
+![](img/img8.png)
 
 Note uma média maior agora e que os dados se encontram melhor distribuídos dentro dos respectivos desvios padrões. Uma curiosidade é que existem vários valores baixos na primeira classe por conta de funcionários que não pagaram pela passagem porém ficaram em cabines privilegiadas. O boxplot acima difere do apresentado na sessão 1.2. por não conter os *outliers*.
 
 #### Frequência de Idade
 Aqui podemos observar uma maior frequência em adultos entre 20 e 40 anos, como descrito pelas estatísticas na tabela anterior. O presente gráfico não mostra os dados tratados com os valores faltantes para uma melhor visualização, já que teríamos uma coluna enorme na média, além de a ideia aqui ser mostrar os dados reais.
-![[Pasted image 20220613011641.png]]
+![](img/img9.png)
 
 ### Correlações
 Utilizando o método `pd.DataFrame.corr()`, calculei a correlação entre colunas do dataset:
@@ -92,7 +97,7 @@ Utilizando o método `pd.DataFrame.corr()`, calculei a correlação entre coluna
 corr = df_dummies.corr()
 corr.style.background_gradient(cmap='coolwarm_r')
 ```
-![[Pasted image 20220613014703.png]]
+![](img/img10.png)
 De uma forma visualmente mais apresentável:
 ```python
 ax = sns.heatmap( corr,
@@ -107,7 +112,8 @@ ax.set_xticklabels(
 	horizontalalignment='right'
 );
 ```
-![[Pasted image 20220613014841.png]]
+![](img/img12.png)
+
 Podemos observar uma forte correlação entre `Fare` e `PClass`, que aqui é negativa pois quanto maior a classe, menor seu valor numérico (primeira classe = 1, e assim por diante). Outro fato interessante é a correlação da classe com o porto de embarque e também com o sexo. Além disso há uma correlação notável entre o preço da passagem e a idade e o preço da passagem a quantidade de parentes à bordo. Por fim, os gráficos mostram mais uma curiosidade, que passageiros mais velhos tenderam à viajar sozinho (correlação negativa entre `Age` e `SibSp` e  entre `Age` e `Parch`), o que pode ser explicado pelas crianças estarem acompanhadas pelos pais.
 
 Contudo as correlações mais importantes são as entre a coluna `Survived`, nossa coluna *target*, e as demais:
@@ -137,12 +143,13 @@ sns.barplot(
 palette='vlag');
 
 ```
-![[Pasted image 20220613015606.png]]
+![](img/img13.png)
+
 podemos observar então uma maior mortalidade entre homens e uma maior taxa de sobrevivência entre aqueles que pagaram mais por sua passagem. Além disso há uma correlação alta com o porto de embarque, que é explicada pela correlação destas colunas com a coluna `Fare`.
 
 ### Gráfico de Densidades das variáveis numéricas separadas pela coluna *Target*:
 Por fim, observando a densidade, podemos observar novamente a confirmação das correlações, além de notar que uma pequena quantidade de irmãos possui influência na sobrevivência, enquanto muitos irmãos ou nenhum não faz diferença. Além disso a influência da idade na sobrevivência diminui após a mesma passar da média (30 anos).
-![[Pasted image 20220613015929.png]]
+![](img/img14.png)
 
 # 2. Modelos
 Na execução do trabalho, utilizei os seguintes modelos:
@@ -264,7 +271,7 @@ classifier_evaluation(best_knn, x_test, y_test)
 > Average Precision Score: 0.5610012945850632 
 > f1 Score: 0.5387453874538746
 ```
-![[Pasted image 20220613023123.png]]
+![](img/img16.png)
 
 ## 2.3. Regressão Logística
 Parâmetros Testados:
@@ -309,10 +316,13 @@ classifier_evaluation(best_regression, x_test, y_test)
 > Average Precision Score: 0.7968777654358917 
 > f1 Score: 0.8563049853372433
 ```
-![[Pasted image 20220613025257.png]]
+
+![](img/img17.png)
+
 
 Curva ROC:
-![[Pasted image 20220613025907.png]]
+
+![](img/img19.png)
 
 ## 2.4. Support Vector Machine Classifier
 Parâmetros testados:
@@ -353,7 +363,8 @@ classifier_evaluation(best_svc, x_test, y_test)
 > Average Precision Score: 0.7968777654358917 
 > f1 Score: 0.8563049853372433
 ```
-![[Pasted image 20220613031200.png]]
+
+![](img/img20.png)
 
 ## 2.5. Stochastic Gradient Descent
 Parâmetros Testados:
@@ -406,7 +417,9 @@ classifier_evaluation(best_sgd, x_test, y_test)
 > Average Precision Score: 0.4384179277710817 
 > f1 Score: 0.011627906976744186
 ```
-![[Pasted image 20220613032050.png]]
+
+![](img/img21.png)
+
 
 ## 2.6. Gaussian Process Classifier
 Parâmetros testados:
@@ -427,7 +440,9 @@ Accuracy Score: 0.6946564885496184
 Average Precision Score: 0.5734883264139994 
 f1 Score: 0.5945945945945945
 ```
-![[Pasted image 20220613032601.png]]
+
+![](img/img22.png)
+
 ## 2.7. Decision Tree Classifier
 Parâmetros testados:
 ```python
@@ -457,10 +472,13 @@ Accuracy Score: 0.8804071246819338
 Average Precision Score: 0.8136232471306798 
 f1 Score: 0.856269113149847
 ```
-![[Pasted image 20220613033435.png]]
+![](img/img23.png)
 
 Apesar da grande accuracy, o modelo da decision tree basicamente só verifica se o passageiro é homem ou não e o declara morto em caso positivo, pois `Sex` é a coluna com a maior correlação. A accuracy é alta apenas por se beneficiar do desbalanceamento do dataset por conta da maior parte do mesmo ser composta de homens.
-![[Pasted image 20220613034115.png]]
+
+![](img/img24.png)
+
+
  reimplementando, sem os parâmetros escolhidos pelo randomized search cv, obtemos um resultado com menor accuracy porém fazendo um melhor uso do dataset:
  ```python
  tree = DecisionTreeClassifier().fit(x_train, y_train)
@@ -471,8 +489,8 @@ print(export_text(tree, feature_names=x_train.columns.to_list(), max_depth=2))
 
 plot_tree(tree, feature_names=x_train.columns.to_list(), max_depth=2);
 ```
-![[Pasted image 20220613034723.png]]
-![[Pasted image 20220613034741.png]]
+![](img/img25.png)
+![](img/img26.png)
 ## 2.8. Random Forest Classifier
 ```python
 
@@ -496,7 +514,8 @@ Accuracy Score: 0.8854961832061069
 Average Precision Score: 0.8158724948036946 
 f1 Score: 0.8656716417910448
 ```
-![[Pasted image 20220613034928.png]]
+
+![](img/img27.png)
 
 ## 2.9. Perceptron
 Parâmetros Testados:
@@ -527,11 +546,13 @@ best_perceptron = Perceptron(
 > Average Precision Score: 0.806202085587905 
 > f1 Score: 0.8554216867469879
 ```
-![[Pasted image 20220613035250.png]]
+
+![](img/img28.png)
+
 # 3. Resultados
 As métricas de avaliação podem ser observadas na tabela a seguir:
 
-![[Pasted image 20220613035409.png]]
+![](img/img29.png)
 
 Mesmo a RandomForest e a DecisionTree demonstrando um desempenho levemente melhor que os demais modelos, elas não utilizam tão efetivamente o dataset, como pode ser visto na árvore plotada na sessão 2.7. Desta forma o perceptron se mostra o melhor modelo por conta de uma precisão maior e também por maior efetividade computacional, já que o algoritmo de Support Vector Machine é o mais demorado dos algoritmos testados, levando mais de 26 minutos para a testagem de 5 combinações distintas dos parâmetros por Randomized Search CV.
 
